@@ -11,11 +11,15 @@
 ;
 ; IDL>device,/close 
 ;
-;         /mnt/4tbdata/xmm_reduce_results/testing_detection_XFAST_FASPER/
-;         /mnt/4tbdata/xmm_reduce_results/testing_detection_XFAST/one_at_time_reduced_results_FASPER/
-filepath='/mnt/4tbdata/xmm_reduce_results/testing_detection_XFAST/one_at_time_reduced_results_FASPER/'
+;           /mnt/4tbdata/one_results_FASPER/
+filepath='/mnt/4tbdata/seven_results_FASPER/'
 !p.multi=[0,1,2,0,0]
 ;
+; set up printing
+set_plot,'ps' 
+device,file='plot.ps'
+
+
 ; Start by creating a list of files and count them
 ;
 spawn,'ls '+filepath+'*freq.dat > obslist'
@@ -51,8 +55,21 @@ while not eof(1) do begin
 ;   if you change the filepath, you need to change the 'filbase'
 ;   length below accordingly!!! (not set to first 58 chars of 'fil')
 ;
-    filbase=strmid(fil,0,108)+'_1000_'
-    print, filbase
+
+; code so no need to count filename length 
+    energy_pos = strpos(fil, '_1000_')
+    filbase = strmid(fil,0,energy_pos) + '_1000_'
+    
+    ;find detID 
+;    det_pos = strpos(fil,'_')
+    print, "energy_pos: ", energy_pos
+    det_string = strmid(filbase, energy_pos-6, 6)
+    print, "det string: ", det_string
+    
+    
+;    print, "new file base: ", new_file_base
+;    filbase=strmid(fil,0,49)+'_1000_'
+    print, "filbase", filbase
     powerfil=filbase+'power.dat'
     freqfil=filbase+'freq.dat'
     resultfil=filbase+'restresults.dat'
@@ -74,9 +91,9 @@ while not eof(1) do begin
     endif
     close,2
 ;
-;   Limits the rest to cases where log(fap) < -3.0
+;   Limits the rest to cases where log(fap) < -3.0 - changed 2.0
 ;
-    if(alog10(fap) lt -3.0) then begin
+    if(alog10(fap) lt -2) then begin
 ;
     openr,2,freqfil
     ic=0l
@@ -131,9 +148,9 @@ while not eof(1) do begin
 ;   (min(fbin) > -100.0) for plotting
 ;  
     if(logfap_arr(inum) lt -3.0 and finite(logfap_arr(inum)) and (min(fbin) gt -100.)) then begin
-      printf,4,strmid(fil,0,108),1.0/freq(jmax),power(jmax),logfap_arr(inum)
+      printf,4,strmid(fil,0,energy_pos),1.0/freq(jmax),power(jmax),logfap_arr(inum)
       save,freq,power,jmax,fap,tbin,fbin,file=fil+'_LS.sav'
-      !mtitle='Lomb-Scargle'
+      !mtitle= 'detid: # ' + det_string + '  log power: ' + string(logfap_arr(inum))
       !ytitle='Power'
       !xtitle='Period (sec)'
       plot_oi,1.0/freq,power
@@ -150,6 +167,10 @@ while not eof(1) do begin
 ;
 endwhile
 print, "total BACKSCAL count : ", backscal_count 
+
+; close printing 
+device,/close 
+
 close,/all
 end  
 

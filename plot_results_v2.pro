@@ -9,7 +9,7 @@
 ;
 ; run the code and do 
 ;
-; IDL>device,/close 
+; IDL>device, /close 
 ;
 ;           /mnt/4tbdata/one_results_FASPER/
 filepath='/mnt/4tbdata/seven_results_FASPER/'

@@ -31,7 +31,7 @@ obsID_path = args[0]
 obs = obsID_path
 obsID = args[1]
 
-hard_coded_dir = '/mnt/4tbdata/limflcorr_test'
+hard_coded_dir = '/mnt/4tbdata/test_ls_epoch'
 
 
 
@@ -107,7 +107,7 @@ tzero = dat[0].time
 tmax = dat[n_elements(dat.time)-1].time
 dat = 0
 
-print, 'passed extract min timebin'
+;print, 'passed extract min timebin'
 
 
 dat = mrdfits(tst, 0, hdr)
@@ -130,7 +130,7 @@ print, 'passed frametime'
 catalog_dat = mrdfits(hard_coded_dir + '/3XMM_DR4cat_v1.0.fits', 1, hdr, $
           columns=['DETID', 'SRC_NUM', 'OBS_ID', 'SUM_FLAG']) 
 
-print, 'passed find detID' 
+;print, 'passed find detID' 
 
 
 ; -------------------------------------------------------------------------
@@ -201,33 +201,33 @@ print, 'number of elements: ', nsrcs
          prbs3 = strpos(dat, 'white') ; Background extraction region
          prbs4 = strpos(dat, 'red')   ; Regions to be excluded from the background
         
-        print, 'STRING POS RED'
-        print, prbs4
+;        print, 'STRING POS RED'
+;        print, prbs4
 
          ; sloc is line number where 'green' appears - i.e. source region
          sloc = where (prbs1 ne -1 and prbs2 ne -1)
-         print, "SLOC"
-         print, sloc
+;         print, "SLOC"
+;         print, sloc
          ; bloc is line number where 'white' appears - i.e. background region
          bloc = where (prbs1 ne -1 and prbs3 ne -1)
-         print, "BLOC"
-         print, bloc
+;         print, "BLOC"
+;         print, bloc
          ; beloc is line number where 'red' appears - i.e regions to be excluded
          beloc =  where (prbs1 ne -1 and prbs4 ne -1)
-         PRINT,  "beloc"
-         PRINT, beloc
+;         PRINT,  "beloc"
+;         PRINT, beloc
 
 
          if strpos(dat[sloc], '#') eq -1 then src = dat[sloc] else $
             bsrc = strmid(dat[sloc],0,strpos(dat[sloc],'#')-1)
             ; bsrc graps string detector;circle(x,y, radius) for source region 
-            print, "bsrc : ", bsrc
+;            print, "bsrc : ", bsrc
          if strpos(dat[bloc], '#') eq -1 then bkg = dat[bloc] else $
             bbkg = strmid(dat[bloc],0,strpos(dat[bloc],'#')-1)
             ;bbkg graps string detector;circle(x,y, radius) for background region
-            print, "bbkg : ", bbkg
+;            print, "bbkg : ", bbkg
          bebkg = strarr(n_elements(beloc))
-         print, "BEBKG no_elements : ", n_elements(beloc)
+;         print, "BEBKG no_elements : ", n_elements(beloc)
        
           ; I have put in - if no regions to be excluded then just print out else gather excluded regions
           if n_elements(beloc) eq 1 and beloc[0] eq -1 then print, "no regions to exclude  " else $
@@ -239,10 +239,10 @@ print, 'number of elements: ', nsrcs
             
          ;splits string removes 'detector' 
          src = strsplit(bsrc, ';', /extract)
-         print, "src : ", src
+;         print, "src : ", src
          src = src[1]
          bkg = strsplit(bbkg, ';', /extract)
-         print, "bkg : ", bkg
+;         print, "bkg : ", bkg
          bkg = bkg[1]
          ; instantiates string array to hold all occurances of excluded 'red' background regions 
          ebkg = strarr(n_elements(bebkg))
@@ -295,7 +295,7 @@ print, 'number of elements: ', nsrcs
           if ebkg_empty_flag eq 1 then rest_bkneexpr = '&&' + ebkg + '&&' +timflt else $
             rest_bkneexpr = '&&' +timflt
           bkneexpr = bkneexpr + rest_bkneexpr
-          print, "bkneexpr : ", bkneexpr 
+;          print, "bkneexpr : ", bkneexpr 
           
           imgnm[j] = pth+'IMAGE'+strlw[j]+'-'+strup[j]+'.img'
           fltev[j] = pth+'FLTLI'+strlw[j]+'-'+strup[j]+'.ev'
@@ -365,7 +365,7 @@ print, 'number of elements: ', nsrcs
 ; --------------------------------------------------------------------------
 
 ; --------------------------------------------------------------------------
-          ; Correct for small gaps in the source lightcurve ---- NOT DONE - PROBLEMS
+          ; Correct for small gaps in the source lightcurve 
           corrt = smlgp(s_rt, time, dt, psdt, altm=altm, cgti=cgti)
           time = altm
           gti = cgti
@@ -380,16 +380,21 @@ print, 'number of elements: ', nsrcs
              f_tm = dat.time
              f_rt = dat.rate
              
-             print, "dat.rate : ", f_rt
+;             print, "dat.rate : ", f_rt
 
 	           ;FLCUTTR is the optimised flare cut threshold 
              ctlim = sxpar(fhdr, 'FLCUTTHR')
              
-             print, "time res: ", dt
+             ; find flare binning 
+             flare_binning = sxpar(fhdr, 'TIMEDEL')
+             
+             print, "flare binning: ", flare_binning
+                          
+             ;print, "time res: ", dt
              
              ; ****** flare gap size set here **************
              gpsz = 300.
-             igti = limflrcorr(f_rt, f_tm, 10., segs=segs, gpsz=gpsz, $
+             igti = limflrcorr(f_rt, f_tm, flare_binning, segs=segs, gpsz=gpsz, $
                                flrlim=ctlim)
              if gti[0,0] eq -1 then gti = igti else gti = [[gti],[igti]]
           endfor

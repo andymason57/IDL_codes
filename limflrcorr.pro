@@ -1,21 +1,5 @@
 function limflrcorr, rate, time, dt, segs=segs, gpsz=gpsz, flrlim=flrlim
  
- 
-;err_log = '/mnt/4tbdata/error_log.txt' 
-;CATCH, err
-;If err NE 0 THEN BEGIN
-   ;cancel the error handler for this procedure 
-;  CATCH, /CANCEL 
-  ; write out detectionID and error code/message of calling procedure 
-;  openw, snow, err_log, /get_lun
-;  printf, snow, 'OBSID : ', obsID_path
-;  printf, snow, 'Detection ID: ', detID
-;  printf, snow, 'Error index: ', err
-;  printf, snow, 'Error message: ', !ERROR_STATE.MSG
-;  print, 'limflrcorr runtime error handler!!!!!!!!!!!!!!!!!!!!'
-;  free_lun, snow
-;ENDIF  
-
 ; -----------------------------------------------------------------------
 
 ; Produce the Flare GTIs given the SN corrected limit and using the
@@ -42,10 +26,10 @@ function limflrcorr, rate, time, dt, segs=segs, gpsz=gpsz, flrlim=flrlim
   if good_count gt 0 then rate = rate[good_points] 
   
   mask = where(rate le flrlim)
-  print, "mask: ", mask
+;  print, "mask: ", mask
   time = time[mask]
   
-  print, "TIME : ", time 
+;  print, "TIME : ", time 
 
 ; Figure out where there are non-consecutive time steps
 
@@ -54,7 +38,7 @@ function limflrcorr, rate, time, dt, segs=segs, gpsz=gpsz, flrlim=flrlim
   
   tdiffs = time[utrk]-time[trk]
   
-  ;print, "tdiffs: ", tdiffs
+;  print, "tdiffs: ", tdiffs
   
 
 ; Define these as the gaps in the time series
@@ -62,6 +46,7 @@ function limflrcorr, rate, time, dt, segs=segs, gpsz=gpsz, flrlim=flrlim
   ; Add in a limit for when IDL is stupid
   lim = 1e-6
    gps = where(tdiffs gt dt*(1.0+lim))
+;   print, "gps: ", n_elements(gps)
   
 ; ------------------------------------------------------------------------
 
@@ -72,7 +57,13 @@ function limflrcorr, rate, time, dt, segs=segs, gpsz=gpsz, flrlim=flrlim
      segs[*,0] = [0,gps+1]
      segs[*,1] = [gps, n_elements(time)-1]
      
+;     print, "segs_one: ", segs[*,0]
+;     print, "segs_two: ", segs[*,1]
+     
      gti = time[segs]
+     
+;     print, "gti_first : ", gti[*,1]
+;     print, "gti_second : ", gti[*,0]
 
 ; Find the differences in time for the Good Time intervals
      diffgti = gti[*,1]-gti[*,0]

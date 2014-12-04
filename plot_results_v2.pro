@@ -12,7 +12,7 @@
 ; IDL>device, /close 
 ;
 ;           /mnt/4tbdata/one_results_FASPER/
-filepath='/mnt/4tbdata/seven_results_FASPER/'
+filepath='/mnt/4tbdata/twelve_results_FASPER/'
 !p.multi=[0,1,2,0,0]
 ;
 ; set up printing
@@ -85,10 +85,10 @@ while not eof(1) do begin
     readf,2,nout
     jmax=0.0
     fap=1.0
-    if(nout gt 11.0) then begin
+;    if(nout gt 11.0) then begin
       readf,2,jmax
       readf,2,fap
-    endif
+;    endif
     close,2
 ;
 ;   Limits the rest to cases where log(fap) < -3.0 - changed 2.0

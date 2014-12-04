@@ -142,8 +142,32 @@ Y = temp_Y(cumulative_Y)
 
          wk1  = df*(findgen(nout)+1.)
          wk2  = (cterm+sterm)/(2.0*var)
-         pmax = MAX( wk2, jmax )
+         
+         num_elements_wk1 = n_elements(wk1)
+         num_elements_wk2 = n_elements(wk2)
+         
+         print, num_elements_wk1
+         print, num_elements_wk2
 
+         ; slice first 10 frequencies - see if high power red noise if not - leave LC alone, otherwise ignore first 10 freq
+         redn_wk1 = wk1(0:9)
+         redn_wk2 = wk2(0:9)
+         
+         red_pmax = MAX(redn_wk2, red_jmax)
+         print, 'red_jmax', redn_wk2(red_jmax) 
+         
+         if redn_wk2(red_jmax) gt 10 then begin
+          ;slice wk1 and wk2 
+          new_wk1 = wk1(39:num_elements_wk1-1) 
+          new_wk2 = wk2(39:num_elements_wk2-1)
+          pmax = MAX( new_wk2, jmax )
+          print, "red noise present"
+         jmax = jmax + 40
+         endif else begin
+           pmax = MAX(wk2, jmax)
+           print, 'red noise not present'
+         endelse
+                  
          expy =exp(-pmax)                   ;Estimate significance of largest
          effm =2.0*(nout)/ofac              ;peak value.
          prob =effm*expy

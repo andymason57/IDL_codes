@@ -1,6 +1,25 @@
 pro chimax2_v2, other_args
 
-;FILE_PATH, GTI_FILE_PATH, OUTPUT_FILE_PATH, obsID,
+; e.g. of use : chimax2,t,f,err,1000,20,100.0,300.0,per,chi2,fv
+;
+;   Computes Chi^2 vs. period for the null hypothesis that
+;   there is no variability over the trial period. So Max(chi2)
+;   givess the most likely period. The fvalue is an analysis of
+;   variance version of the same method.
+;
+;       I/O variables:
+;
+;       time (inout) -- time vector
+;       flux (input) -- flux vector
+;       err (input) --  error for flux vector
+;       nper (input) -- number of periods to search for
+;       nbin (input) -- number of phase bins  (try 10-20)
+;       minper (input) -- minimum period to search for
+;       maxper (inut) -- maximum period ----,,-----
+;       per (output) --  period vector 
+;       chisqu (output) --  chi^2 vector, maximum gives best period
+;       fvalue (output) -- F-stat vector, maximum gives best period
+
 
 args = command_line_args()
 FILE_PATH = args[0] 
@@ -38,31 +57,16 @@ openr, snow, GTI_FILE_PATH, /get_lun
       if i eq 0 then (cumulative_Z = temp) else (cumulative_Z = [cumulative_Z,temp])
   endfor
 
-time = temp_x(cumulative_x)
-flux = temp_y(cumulative_y)
-err = temp_z(cumulative_z)
+gti_time = temp_x(cumulative_x)
+gti_flux = temp_y(cumulative_y)
+gti_err = temp_z(cumulative_z)
+
+; assign time, flux, error variables
+time = gti_time
+flux = gti_flux
+err = gti_err
 
 
-
-;
-;   Computes Chi^2 vs. period for the null hypothesis that
-;   there is no variability over the trial period. So Max(chi2)
-;   givess the most likely period. The fvalue is an analysis of
-;   variance version of the same method.
-;
-;       I/O variables:
-;
-;       time (inout) -- time vector
-;       flux (input) -- flux vector
-;       err (input) --  error for flux vector
-;       nper (input) -- number of periods to search for
-;       nbin (input) -- number of phase bins  (try 10-20)
-;       minper (input) -- minimum period to search for
-;       maxper (inut) -- maximum period ----,,-----
-;       per (output) --  period vector 
-;       chisqu (output) --  chi^2 vector, maximum gives best period
-;       fvalue (output) -- F-stat vector, maximum gives best period
-;
 nlimit=fix(1)
 p=dblarr(nper)
 chisqu=dblarr(nper)
@@ -76,7 +80,6 @@ ebin=dblarr(nbin)
 nf=dblarr(nbin)
 vbin=dblarr(nbin)
 phbin=dblarr(nbin)
-; altered by Andy from (maxp) to (maxper)
 minf=1.0/(maxper)
 maxf=1.0/(minper)
 df=(maxf-minf)/(1.*nper)
@@ -125,28 +128,31 @@ while i lt nper-1 do begin
   i=i+1
 endwhile
 
-; added by andy m to output results
-SAVE, /ALL, FILENAME = 'myIDLsession.sav'
-printf,2, chisqr
-save, chisqu, fvalue  = 'epoch_output_LS.sav'
+
+;calculate max_chisqu
+max_chi = max(chisqu)
+max_fv = max(fvalue)
+
+;print to file results
+resultfile = OUTPUT_FILE_PATH + obsID  + "_" + detid + '_epoch_results.dat'
+cd, OUTPUT_FILE_PATH
+openw,1, resultfile
+printf, 1, max_chi
+printf, 1, max_fv
+
+;code to write array results to file
+fname_per = obsID + "_" + detid + '_per.dat'
+fname_chisqu = obsID + "_" + detid + '_chisq.dat'
+openw, p_data, fname_per, /get_lun
+openw, chi_data, fname_chisqu, /get_lun
+printf, p_data, p, format = '(f7.3, 1X, f7.3, 1X, f7.3)' 
+printf, chi_data, chisqu, format = '(f7.3, 1X, f7.3, 1X, f7.3)' 
+
+print, "reached end of writes" 
+
+free_lun, p_data
+free_lun, chi_data
 
 
-;insert code to write results to file
-;fname_per = OUTPUT_FILE_PATH + obsID + "_" + detid + '_per.dat'
-;fname_chisqu = OUTPUT_FILE_PATH + obsID + "_" + detid + '_chisq.dat'
-;fname_fvalue = OUTPUT_FILE_PATH + obsID  + "_" + detid + '_fvalue.dat'
-;openw, per, fname_per, /get_lun
-;openw, chisqu, fname_chisqu, /get_lun
-;openw, fvalue, fname_fvalue, /get_lun
-;printf, per, format = '(f0.18)' 
-;printf, chisqu, format = '(f0.18)' 
-;printf, fvalue, format = '(f0.18)'
-;print, "reached end of writes" 
 
-;free_lun, per
-;free_lun, chisqu
-;free_lun, fvalue
-
-
-return
 end

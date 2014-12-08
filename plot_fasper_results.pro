@@ -93,10 +93,10 @@ while not eof(1) do begin
     readf,2,nout
     jmax=0.0
     fap=1.0
-    if(nout gt 11.0) then begin
+;    if(nout gt 11.0) then begin
       readf,2,jmax
       readf,2,fap
-    endif
+;    endif
     close,2
 ;
 ;   Limits the rest to cases where log(fap) < -3.0 - changed 2.0
@@ -155,7 +155,7 @@ while not eof(1) do begin
 ;   Select detections with log(fap) < -3.0 and correct backscale
 ;   (min(fbin) > -100.0) for plotting
 ;  
-    if(logfap_arr(inum) lt -3.0 and finite(logfap_arr(inum)) and (min(fbin) gt -100.)) then begin
+    if(logfap_arr(inum) lt -2.0 and finite(logfap_arr(inum)) and (min(fbin) gt -100.)) then begin
       printf,4,strmid(fil,0,energy_pos),1.0/freq(jmax),power(jmax),logfap_arr(inum)
       save,freq,power,jmax,fap,tbin,fbin,file=fil+'_LS.sav'
       !mtitle= 'detid: # ' + det_string + '  log power: ' + string(logfap_arr(inum))

@@ -393,7 +393,7 @@ print, 'number of elements: ', nsrcs
              ;print, "time res: ", dt
              
              ; ****** flare gap size set here **************
-             gpsz = 300.
+             gpsz = 100.
              igti = limflrcorr(f_rt, f_tm, flare_binning, segs=segs, gpsz=gpsz, $
                                flrlim=ctlim)
              if gti[0,0] eq -1 then gti = igti else gti = [[gti],[igti]]

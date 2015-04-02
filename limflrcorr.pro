@@ -18,31 +18,25 @@ function limflrcorr, rate, time, dt, segs=segs, gpsz=gpsz, flrlim=flrlim
 
 ; ------------------------------------------------------------------------
 
-  ;print, "RATE :", rate
-  ;print, "FLRLIM :", flrlim
-
+ 
 ;Remove NaN from both rate and time arrays
   bad_points = where(finite(rate,/NAN), badcount, COMPLEMENT=good_points, NCOMPLEMENT=good_count)
   if good_count gt 0 then rate = rate[good_points] 
   
   mask = where(rate le flrlim)
-;  print, "mask: ", mask
   time = time[mask]
   
-;  print, "TIME : ", time 
+
 
 ; Figure out where there are non-consecutive time steps
-
   trk = make_array(n_elements(time)-1, /index)
   utrk = trk+1
   
   tdiffs = time[utrk]-time[trk]
   
-;  print, "tdiffs: ", tdiffs
-  
+
 
 ; Define these as the gaps in the time series
-
   ; Add in a limit for when IDL is stupid
   lim = 1e-6
    gps = where(tdiffs gt dt*(1.0+lim))
@@ -57,25 +51,13 @@ function limflrcorr, rate, time, dt, segs=segs, gpsz=gpsz, flrlim=flrlim
      segs[*,0] = [0,gps+1]
      segs[*,1] = [gps, n_elements(time)-1]
      
-;     print, "segs_one: ", segs[*,0]
-;     print, "segs_two: ", segs[*,1]
-     
      gti = time[segs]
      
-;     print, "gti_first : ", gti[*,1]
-;     print, "gti_second : ", gti[*,0]
-
 ; Find the differences in time for the Good Time intervals
      diffgti = gti[*,1]-gti[*,0]
      
-;     print, "diffgti: ", diffgti
-
     zum = where(diffgti gt gpsz)
 
-; altered by me from gt to GE (greater than to greater than or equal)
-;    zum = where(diffgti GE gpsz) 
-;     print, "zum: ", zum    
- 
 ; Filter the GTI based on this mask
 
      gti = gti[zum,*]

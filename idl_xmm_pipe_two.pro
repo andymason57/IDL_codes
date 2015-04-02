@@ -1,4 +1,4 @@
-pro idl_xmm_pipe_one, other_args
+pro idl_xmm_pipe_two, other_args
 ;two parameters passed args[0] = path to observation, arg[1] = observationalID
 
 !EXCEPT=2
